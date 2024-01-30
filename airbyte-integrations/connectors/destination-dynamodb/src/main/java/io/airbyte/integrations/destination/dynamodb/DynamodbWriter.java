@@ -85,26 +85,36 @@ public class DynamodbWriter {
   }
 
   private Table createTableIfNotExists(final AmazonDynamoDB amazonDynamodb, final String tableName) throws Exception {
+    String partitionKeyName = this.config.getOverridePKFlag() ? this.config.getOverridePK() : JavaBaseConstants.COLUMN_NAME_AB_ID;
     final AttributeDefinition partitionKeyDefinition = new AttributeDefinition()
-        .withAttributeName(JavaBaseConstants.COLUMN_NAME_AB_ID)
+        .withAttributeName(partitionKeyName)
         .withAttributeType(ScalarAttributeType.S);
-    final AttributeDefinition sortKeyDefinition = new AttributeDefinition()
-        .withAttributeName("sync_time")
-        .withAttributeType(ScalarAttributeType.N);
     final KeySchemaElement partitionKeySchema = new KeySchemaElement()
-        .withAttributeName(JavaBaseConstants.COLUMN_NAME_AB_ID)
+        .withAttributeName(partitionKeyName)
         .withKeyType(KeyType.HASH);
-    final KeySchemaElement sortKeySchema = new KeySchemaElement()
-        .withAttributeName("sync_time")
-        .withKeyType(KeyType.RANGE);
 
-    TableUtils.createTableIfNotExists(amazonDynamodb, new CreateTableRequest()
-        .withTableName(tableName)
-        .withAttributeDefinitions(partitionKeyDefinition)
-        .withKeySchema(partitionKeySchema)
-        .withAttributeDefinitions(sortKeyDefinition)
-        .withKeySchema(sortKeySchema)
-        .withBillingMode(BillingMode.PAY_PER_REQUEST));
+    CreateTableRequest request = new CreateTableRequest()
+            .withTableName(tableName)
+            .withAttributeDefinitions(partitionKeyDefinition)
+            .withKeySchema(partitionKeySchema)
+            .withBillingMode(BillingMode.PAY_PER_REQUEST);
+
+    if (this.config.getEnableSortKeyFlag()) {
+      String sortKeyName = this.config.getOverrideSKFlag() ? this.config.getOverrideSK() : "sync_time";
+
+      final AttributeDefinition sortKeyDefinition = new AttributeDefinition()
+              .withAttributeName(sortKeyName)
+              .withAttributeType(ScalarAttributeType.N);
+      final KeySchemaElement sortKeySchema = new KeySchemaElement()
+              .withAttributeName(sortKeyName)
+              .withKeyType(KeyType.RANGE);
+
+      request = request
+              .withAttributeDefinitions(sortKeyDefinition)
+              .withKeySchema(sortKeySchema);
+    }
+
+    TableUtils.createTableIfNotExists(amazonDynamodb, request);
     return new DynamoDB(amazonDynamodb).getTable(tableName);
   }
 
@@ -113,8 +123,29 @@ public class DynamodbWriter {
     final ObjectMapper mapper = new ObjectMapper();
     final Map<String, Object> dataMap = mapper.convertValue(recordMessage.getData(), new TypeReference<Map<String, Object>>() {});
 
-    final var item = new Item()
-        .withPrimaryKey(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(), "sync_time", uploadTimestamp)
+    String partitionKeyName = JavaBaseConstants.COLUMN_NAME_AB_ID;
+    Object partitionKeyValue = UUID.randomUUID().toString();
+    if (this.config.getOverridePKFlag()) {
+      partitionKeyName = this.config.getOverridePK();
+      partitionKeyValue = dataMap.get(partitionKeyName);
+    }
+
+    Item item;
+    if (!this.config.getEnableSortKeyFlag()) {
+      item = new Item()
+              .withPrimaryKey(partitionKeyName, partitionKeyValue);
+    } else {
+      String sortKeyName = "sync_time";
+      Object sortKeyValue = uploadTimestamp;
+      if (this.config.getOverrideSKFlag()) {
+        sortKeyName = this.config.getOverrideSK();
+        sortKeyValue = dataMap.get(sortKeyName);
+      }
+
+      item = new Item()
+              .withPrimaryKey(partitionKeyName, partitionKeyValue, sortKeyName, sortKeyValue);
+    }
+    item = item
         .withMap(JavaBaseConstants.COLUMN_NAME_DATA, dataMap)
         .withLong(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
     tableWriteItems.addItemToPut(item);

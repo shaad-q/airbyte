@@ -9,10 +9,12 @@
     "title": "DynamoDB Destination Spec",
     "type": "object",
     "required": [
-      "dynamodb_table_name_prefix",
       "dynamodb_region",
       "access_key_id",
-      "secret_access_key"
+      "secret_access_key",
+      "override_partition_key_flag",
+      "enable_sort_key",
+      "override_sort_key_flag"
     ],
     "additionalProperties": false,
     "properties": {
@@ -84,7 +86,56 @@
         "title": "DynamoDB Access Key",
         "airbyte_secret": true,
         "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"]
+      },
+      "override_partition_key_flag": {
+        "type": "boolean",
+        "description": "Do you want to override partition key '_airbyte_ab_id' ?",
+        "title": "Override Partition Key?",
+        "default": false,
+        "examples": [false],
+        "order": 1,
+        "group": "tableOptions"
+      },
+      "override_partition_key": {
+        "type": "string",
+        "description": "The corresponding partition key available in source data. Default: 'uuid'",
+        "title": "Override Partition Key Name",
+        "examples": ["uuid"],
+        "order": 1,
+        "group": "tableOptions"
+      },
+      "enable_sort_key": {
+        "type": "boolean",
+        "description": "Do you want sort key on your table? Default: 'sync_time'",
+        "title": "Enable Sort Key?",
+        "default": true,
+        "examples": [false],
+        "order": 0,
+        "group": "tableOptions"
+      },
+      "override_sort_key_flag": {
+        "type": "boolean",
+        "description": "Do you want to override sort key 'sync_time' ?",
+        "title": "Override Sort Key?",
+        "default": false,
+        "examples": [false],
+        "order": 2,
+        "group": "tableOptions"
+      },
+      "override_sort_key": {
+        "type": "string",
+        "description": "The corresponding sort key available in source data. Default: 'updated_at'",
+        "title": "Override Sort Key Name",
+        "examples": ["updated_at"],
+        "order": 2,
+        "group": "tableOptions"
       }
-    }
+    },
+    "groups": [
+      {
+        "id": "tableOptions",
+        "title": "Scanbuy DynamoDB Table Options"
+      }
+    ]
   }
 }
