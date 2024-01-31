@@ -16,6 +16,8 @@ public class DynamodbDestinationConfig {
   private final Boolean enableSortKeyFlag;
   private final Boolean overrideSKFlag;
   private final String overrideSK;
+  private final Boolean overrideDataKeyFlag;
+  private final String overrideDataKey;
   private final Boolean overridePKFlag;
   private final String overridePK;
 
@@ -29,7 +31,9 @@ public class DynamodbDestinationConfig {
                                    final Boolean overrideSKFlag,
                                    final String overrideSK,
                                    final Boolean overridePKFlag,
-                                   final String overridePK) {
+                                   final String overridePK,
+                                   final Boolean overrideDataKeyFlag,
+                                   final String overrideDataKey) {
     this.endpoint = endpoint;
     this.tableNamePrefix = tableNamePrefix;
     this.region = region;
@@ -40,6 +44,8 @@ public class DynamodbDestinationConfig {
     this.overrideSK = overrideSK;
     this.overridePKFlag = overridePKFlag;
     this.overridePK = overridePK;
+    this.overrideDataKeyFlag = overrideDataKeyFlag;
+    this.overrideDataKey = overrideDataKey;
   }
 
   public static DynamodbDestinationConfig getDynamodbDestinationConfig(final JsonNode config) {
@@ -53,7 +59,9 @@ public class DynamodbDestinationConfig {
         config.get("override_sort_key_flag").asBoolean(),
         config.get("override_sort_key_flag").asBoolean() && config.get("override_sort_key") != null ? config.get("override_sort_key").asText() : "updated_at",
         config.get("override_partition_key_flag").asBoolean(),
-        config.get("override_partition_key_flag").asBoolean() && config.get("override_partition_key") != null ? config.get("override_partition_key").asText() : "uuid");
+        config.get("override_partition_key_flag").asBoolean() && config.get("override_partition_key") != null ? config.get("override_partition_key").asText() : "uuid",
+        config.get("override_data_key_flag").asBoolean(),
+        config.get("override_data_key_flag").asBoolean() && config.get("override_data_key") != null ? config.get("override_data_key").asText() : "data");
   }
 
   public String getEndpoint() {
@@ -83,6 +91,10 @@ public class DynamodbDestinationConfig {
   public Boolean getOverrideSKFlag() {return overrideSKFlag;}
 
   public String getOverrideSK() {return overrideSK;}
+
+  public Boolean getOverrideDataKeyFlag() {return overrideDataKeyFlag;}
+
+  public String getOverrideDataKey() {return overrideDataKey;}
 
   public String getOverridePK() {return overridePK;}
 

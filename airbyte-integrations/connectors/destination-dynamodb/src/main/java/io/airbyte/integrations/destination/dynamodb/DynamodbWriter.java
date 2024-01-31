@@ -145,8 +145,13 @@ public class DynamodbWriter {
       item = new Item()
               .withPrimaryKey(partitionKeyName, partitionKeyValue, sortKeyName, sortKeyValue);
     }
+    String dataKey = JavaBaseConstants.COLUMN_NAME_DATA;
+    if (this.config.getOverrideDataKeyFlag()) {
+      dataKey = this.config.getOverrideDataKey();
+    }
+
     item = item
-        .withMap(JavaBaseConstants.COLUMN_NAME_DATA, dataMap)
+        .withMap(dataKey, dataMap)
         .withLong(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
     tableWriteItems.addItemToPut(item);
     BatchWriteItemOutcome outcome;

@@ -14,7 +14,8 @@
       "secret_access_key",
       "override_partition_key_flag",
       "enable_sort_key",
-      "override_sort_key_flag"
+      "override_sort_key_flag",
+      "override_data_key_flag"
     ],
     "additionalProperties": false,
     "properties": {
@@ -128,6 +129,23 @@
         "title": "Override Sort Key Name",
         "examples": ["updated_at"],
         "order": 2,
+        "group": "tableOptions"
+      },
+      "override_data_key_flag": {
+        "type": "boolean",
+        "description": "Do you want to override data key '_airbyte_data' ?",
+        "title": "Override Data Key?",
+        "default": false,
+        "examples": [false],
+        "order": 3,
+        "group": "tableOptions"
+      },
+      "override_data_key": {
+        "type": "string",
+        "description": "The corresponding data will be under the key name. Default: 'data'",
+        "title": "Override Data Key Name",
+        "examples": ["body"],
+        "order": 3,
         "group": "tableOptions"
       }
     },
