@@ -28,7 +28,7 @@ public class DynamodbOutputTableHelper {
       paths.add(new StandardNameTransformer().convertStreamName(streamName));
     }
 
-    return String.join("_", paths);
+    return String.join("_", paths).replace("_", "-");
   }
 
 }
