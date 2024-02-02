@@ -85,7 +85,7 @@ public class DynamodbWriter {
   }
 
   private Table createTableIfNotExists(final AmazonDynamoDB amazonDynamodb, final String tableName) throws Exception {
-    String partitionKeyName = this.config.getOverridePKFlag() ? this.config.getOverridePK() : JavaBaseConstants.COLUMN_NAME_AB_ID;
+    String partitionKeyName = config.getOverridePKFlag() ? config.getOverridePK() : JavaBaseConstants.COLUMN_NAME_AB_ID;
     final AttributeDefinition partitionKeyDefinition = new AttributeDefinition()
         .withAttributeName(partitionKeyName)
         .withAttributeType(ScalarAttributeType.S);
@@ -99,8 +99,8 @@ public class DynamodbWriter {
             .withKeySchema(partitionKeySchema)
             .withBillingMode(BillingMode.PAY_PER_REQUEST);
 
-    if (this.config.getEnableSortKeyFlag()) {
-      String sortKeyName = this.config.getOverrideSKFlag() ? this.config.getOverrideSK() : "sync_time";
+    if (config.getEnableSortKeyFlag()) {
+      String sortKeyName = config.getOverrideSKFlag() ? config.getOverrideSK() : "sync_time";
 
       final AttributeDefinition sortKeyDefinition = new AttributeDefinition()
               .withAttributeName(sortKeyName)
@@ -125,30 +125,25 @@ public class DynamodbWriter {
 
     String partitionKeyName = JavaBaseConstants.COLUMN_NAME_AB_ID;
     Object partitionKeyValue = UUID.randomUUID().toString();
-    if (this.config.getOverridePKFlag()) {
-      partitionKeyName = this.config.getOverridePK();
+    if (config.getOverridePKFlag()) {
+      partitionKeyName = config.getOverridePK();
       partitionKeyValue = dataMap.get(partitionKeyName);
     }
 
-    Item item;
-    if (!this.config.getEnableSortKeyFlag()) {
-      item = new Item()
-              .withPrimaryKey(partitionKeyName, partitionKeyValue);
+    Item item = new Item();
+    if (!config.getEnableSortKeyFlag()) {
+      item = item.withPrimaryKey(partitionKeyName, partitionKeyValue);
     } else {
       String sortKeyName = "sync_time";
       Object sortKeyValue = uploadTimestamp;
-      if (this.config.getOverrideSKFlag()) {
-        sortKeyName = this.config.getOverrideSK();
+      if (config.getOverrideSKFlag()) {
+        sortKeyName = config.getOverrideSK();
         sortKeyValue = dataMap.get(sortKeyName);
       }
 
-      item = new Item()
-              .withPrimaryKey(partitionKeyName, partitionKeyValue, sortKeyName, sortKeyValue);
+      item = item.withPrimaryKey(partitionKeyName, partitionKeyValue, sortKeyName, sortKeyValue);
     }
-    String dataKey = JavaBaseConstants.COLUMN_NAME_DATA;
-    if (this.config.getOverrideDataKeyFlag()) {
-      dataKey = this.config.getOverrideDataKey();
-    }
+    String dataKey = config.getOverrideDataKeyFlag() ? config.getOverrideDataKey() : JavaBaseConstants.COLUMN_NAME_DATA;
 
     item = item
         .withMap(dataKey, dataMap)
@@ -159,7 +154,6 @@ public class DynamodbWriter {
       try {
         int maxRetries = 5;
         outcome = dynamodb.batchWriteItem(tableWriteItems);
-        tableWriteItems = new TableWriteItems(this.outputTableName);
 
         while (outcome.getUnprocessedItems().size() > 0 && maxRetries > 0) {
           outcome = dynamodb.batchWriteItemUnprocessed(outcome.getUnprocessedItems());
@@ -171,6 +165,8 @@ public class DynamodbWriter {
         }
       } catch (final Exception e) {
         LOGGER.error(e.getMessage(), e);
+      } finally {
+        tableWriteItems = new TableWriteItems(this.outputTableName);
       }
     }
   }
