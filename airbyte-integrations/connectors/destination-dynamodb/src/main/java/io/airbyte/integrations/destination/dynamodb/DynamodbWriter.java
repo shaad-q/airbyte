@@ -85,26 +85,36 @@ public class DynamodbWriter {
   }
 
   private Table createTableIfNotExists(final AmazonDynamoDB amazonDynamodb, final String tableName) throws Exception {
+    String partitionKeyName = config.getOverridePKFlag() ? config.getOverridePK() : JavaBaseConstants.COLUMN_NAME_AB_ID;
     final AttributeDefinition partitionKeyDefinition = new AttributeDefinition()
-        .withAttributeName(JavaBaseConstants.COLUMN_NAME_AB_ID)
+        .withAttributeName(partitionKeyName)
         .withAttributeType(ScalarAttributeType.S);
-    final AttributeDefinition sortKeyDefinition = new AttributeDefinition()
-        .withAttributeName("sync_time")
-        .withAttributeType(ScalarAttributeType.N);
     final KeySchemaElement partitionKeySchema = new KeySchemaElement()
-        .withAttributeName(JavaBaseConstants.COLUMN_NAME_AB_ID)
+        .withAttributeName(partitionKeyName)
         .withKeyType(KeyType.HASH);
-    final KeySchemaElement sortKeySchema = new KeySchemaElement()
-        .withAttributeName("sync_time")
-        .withKeyType(KeyType.RANGE);
 
-    TableUtils.createTableIfNotExists(amazonDynamodb, new CreateTableRequest()
-        .withTableName(tableName)
-        .withAttributeDefinitions(partitionKeyDefinition)
-        .withKeySchema(partitionKeySchema)
-        .withAttributeDefinitions(sortKeyDefinition)
-        .withKeySchema(sortKeySchema)
-        .withBillingMode(BillingMode.PAY_PER_REQUEST));
+    CreateTableRequest request = new CreateTableRequest()
+            .withTableName(tableName)
+            .withAttributeDefinitions(partitionKeyDefinition)
+            .withKeySchema(partitionKeySchema)
+            .withBillingMode(BillingMode.PAY_PER_REQUEST);
+
+    if (config.getEnableSortKeyFlag()) {
+      String sortKeyName = config.getOverrideSKFlag() ? config.getOverrideSK() : "sync_time";
+
+      final AttributeDefinition sortKeyDefinition = new AttributeDefinition()
+              .withAttributeName(sortKeyName)
+              .withAttributeType(ScalarAttributeType.N);
+      final KeySchemaElement sortKeySchema = new KeySchemaElement()
+              .withAttributeName(sortKeyName)
+              .withKeyType(KeyType.RANGE);
+
+      request = request
+              .withAttributeDefinitions(sortKeyDefinition)
+              .withKeySchema(sortKeySchema);
+    }
+
+    TableUtils.createTableIfNotExists(amazonDynamodb, request);
     return new DynamoDB(amazonDynamodb).getTable(tableName);
   }
 
@@ -113,9 +123,30 @@ public class DynamodbWriter {
     final ObjectMapper mapper = new ObjectMapper();
     final Map<String, Object> dataMap = mapper.convertValue(recordMessage.getData(), new TypeReference<Map<String, Object>>() {});
 
-    final var item = new Item()
-        .withPrimaryKey(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(), "sync_time", uploadTimestamp)
-        .withMap(JavaBaseConstants.COLUMN_NAME_DATA, dataMap)
+    String partitionKeyName = JavaBaseConstants.COLUMN_NAME_AB_ID;
+    Object partitionKeyValue = UUID.randomUUID().toString();
+    if (config.getOverridePKFlag()) {
+      partitionKeyName = config.getOverridePK();
+      partitionKeyValue = dataMap.get(partitionKeyName);
+    }
+
+    Item item = new Item();
+    if (!config.getEnableSortKeyFlag()) {
+      item = item.withPrimaryKey(partitionKeyName, partitionKeyValue);
+    } else {
+      String sortKeyName = "sync_time";
+      Object sortKeyValue = uploadTimestamp;
+      if (config.getOverrideSKFlag()) {
+        sortKeyName = config.getOverrideSK();
+        sortKeyValue = dataMap.get(sortKeyName);
+      }
+
+      item = item.withPrimaryKey(partitionKeyName, partitionKeyValue, sortKeyName, sortKeyValue);
+    }
+    String dataKey = config.getOverrideDataKeyFlag() ? config.getOverrideDataKey() : JavaBaseConstants.COLUMN_NAME_DATA;
+
+    item = item
+        .withMap(dataKey, dataMap)
         .withLong(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
     tableWriteItems.addItemToPut(item);
     BatchWriteItemOutcome outcome;
@@ -123,7 +154,6 @@ public class DynamodbWriter {
       try {
         int maxRetries = 5;
         outcome = dynamodb.batchWriteItem(tableWriteItems);
-        tableWriteItems = new TableWriteItems(this.outputTableName);
 
         while (outcome.getUnprocessedItems().size() > 0 && maxRetries > 0) {
           outcome = dynamodb.batchWriteItemUnprocessed(outcome.getUnprocessedItems());
@@ -135,6 +165,8 @@ public class DynamodbWriter {
         }
       } catch (final Exception e) {
         LOGGER.error(e.getMessage(), e);
+      } finally {
+        tableWriteItems = new TableWriteItems(this.outputTableName);
       }
     }
   }
