@@ -95,7 +95,6 @@ class DestinationEventBridge(Destination):
                         batch.append(message.record.data)
                         if len(batch) == MAX_PUT_ENTRIES:
                             response = self._put_events(client, batch, config.get("bus_name"))
-                            print(response)
                             batch = []
                 else:
                     # Let's ignore other message types for now
@@ -118,7 +117,7 @@ class DestinationEventBridge(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            logger.debug("Amazon Event Bridge Destination Config Check - Starting connection test ---")
+            logger.debug("Amazon Event Bridge Destination Check - Starting connection test ---")
             self._check_config(logger, config)
             session = self._create_session(config)
             client = self._get_events_client(session, config)
@@ -137,12 +136,12 @@ class DestinationEventBridge(Destination):
                 if len(response.get("Entries", [])) != 1 or response["Entries"][0].get("ErrorCode"):
                     raise Exception(f"Could not perform 'PutEvent'")
 
-                logger.debug("Amazon Event Bridge Destination Config Check - Connection test successful ---")
+                logger.debug("Amazon Event Bridge Destination Check - Connection test successful ---")
                 client.close()
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
             else:
                 return AirbyteConnectionStatus(
-                    status=Status.FAILED, message="Amazon Event Bridge Destination Config Check - Could not create client"
+                    status=Status.FAILED, message="Amazon Event Bridge Destination Check - Could not create client"
                 )
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
