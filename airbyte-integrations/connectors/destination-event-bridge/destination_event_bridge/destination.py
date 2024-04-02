@@ -3,20 +3,64 @@
 #
 
 
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, List
+
+import json
+import boto3
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 
+EVENT_SOURCE = "scb-airbyte"
+EVENT_DETAIL_TYPE = "Call via Scanbuy Airbyte"
+MAX_PUT_ENTRIES = 10
 
 class DestinationEventBridge(Destination):
+    def _get_events_client(self, session: boto3.Session, config: Mapping[str, Any]) -> boto3.client:
+        return session.client("events", endpoint_url=config.get("endpoint_url"))
+    
+    def _check_config(self, logger: AirbyteLogger, config: Mapping[str, Any]):
+        required_keys = {"credentials"}
+        defaults = {
+            "region": "us-east-2",
+            "bus_name": "default"
+        }
+
+        for key in required_keys | defaults.keys():
+            value = config.get(key)
+            if not value:
+                if key in required_keys:
+                    if logger:
+                        logger.debug(f"Amazon Event Bridge Destination Config Check - {key} is missing")   
+                    raise Exception(f"'{key}' not found")
+                else:
+                    config[key] = defaults[key]
+                    if logger:
+                        logger.debug(f"Amazon Event Bridge Destination Config Check - {key} setting default to {defaults[key]}")
+
+    def _create_session(self, config: Mapping[str, Any]) -> boto3.Session:
+        return boto3.Session(
+            aws_access_key_id=config.get("credentials")["aws_access_key_id"],
+            aws_secret_access_key=config.get("credentials")["aws_secret_access_key"],
+            region_name=config.get("region"))
+    
+    def _put_events(self, client: boto3.client, detail_list: List[dict], bus_name: str) -> dict:
+        entries = []
+        for detail in detail_list[:MAX_PUT_ENTRIES]:
+            entries.append({
+                "Source": EVENT_SOURCE,
+                "DetailType": EVENT_DETAIL_TYPE,
+                "Detail": json.dumps(detail),
+                "EventBusName": bus_name
+            })
+        return client.put_events(Entries=entries)
+
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
 
         """
-        TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
@@ -30,7 +74,36 @@ class DestinationEventBridge(Destination):
         :param input_messages: The stream of input messages received from the source
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
-        pass
+        streams = {s.stream.name for s in configured_catalog.streams}
+        self._check_config(None, config)
+        session = self._create_session(config)
+        client = self._get_events_client(session, config)
+        try:
+            batch = []
+            for message in input_messages:
+                if message.type == Type.STATE:
+                    # Emitting a state message indicates that all records which came
+                    # before it have been written to the destination. We don't need to
+                    # do anything specific to save the data so we just re-emit these
+                    yield message
+                elif message.type == Type.RECORD:
+                    if message.record.stream not in streams:
+                        # Message contains record from a stream that is not in the catalog.
+                        # Skip
+                        continue
+                    if message.record.data:
+                        batch.append(message.record.data)
+                        if len(batch) == MAX_PUT_ENTRIES:
+                            response = self._put_events(client, batch, config.get("bus_name"))
+                            print(response)
+                            batch = []
+                else:
+                    # Let's ignore other message types for now
+                    continue
+            if batch:
+                response = self._put_events(client, batch, config.get("bus_name"))
+        finally:
+            client.close()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -45,8 +118,31 @@ class DestinationEventBridge(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # TODO
+            logger.debug("Amazon Event Bridge Destination Config Check - Starting connection test ---")
+            self._check_config(logger, config)
+            session = self._create_session(config)
+            client = self._get_events_client(session, config)
+            if client:
+                # List event buses
+                response = client.list_event_buses()
+                event_buses = [bus["Arn"] for bus in response["EventBuses"]]
+                logger.debug(event_buses)
 
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+                # Put event                
+                response = self._put_events(client, [{
+                    "action": "check"
+                }], config.get("bus_name"))                
+                logger.debug(response)
+
+                if len(response.get("Entries", [])) != 1 or response["Entries"][0].get("ErrorCode"):
+                    raise Exception(f"Could not perform 'PutEvent'")
+
+                logger.debug("Amazon Event Bridge Destination Config Check - Connection test successful ---")
+                client.close()
+                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            else:
+                return AirbyteConnectionStatus(
+                    status=Status.FAILED, message="Amazon Event Bridge Destination Config Check - Could not create client"
+                )
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")

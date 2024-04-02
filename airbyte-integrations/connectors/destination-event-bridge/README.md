@@ -43,11 +43,12 @@ and place them into `secrets/config.json`.
 ```
 python main.py spec
 python main.py check --config secrets/config.json
-python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+python main.py write --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Locally running the connector docker image
+
+### Installing `airbyte-ci`(https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
 
 #### Use `airbyte-ci` to build your connector
 The Airbyte way of building this connector is to use our `airbyte-ci` tool.
@@ -55,7 +56,7 @@ You can follow install instructions [here](https://github.com/airbytehq/airbyte/
 Then running the following command will build your connector:
 
 ```bash
-airbyte-ci connectors --name destination-event-bridge build
+airbyte-ci connectors --name destination-event-bridge build --architecture=linux/arm64
 ```
 Once the command is done, you will find your connector image in your local docker registry: `airbyte/destination-event-bridge:dev`.
 

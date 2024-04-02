@@ -7,9 +7,10 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
+    "boto3"
 ]
 
-TEST_REQUIREMENTS = ["pytest"]
+TEST_REQUIREMENTS = ["pytest", "moto"]
 
 setup(
     name="destination_event_bridge",
