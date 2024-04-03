@@ -12,8 +12,6 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 
-EVENT_SOURCE = "scb-airbyte"
-EVENT_DETAIL_TYPE = "Call via Scanbuy Airbyte"
 MAX_PUT_ENTRIES = 10
 
 class DestinationEventBridge(Destination):
@@ -24,7 +22,9 @@ class DestinationEventBridge(Destination):
         required_keys = {"credentials"}
         defaults = {
             "region": "us-east-2",
-            "bus_name": "default"
+            "bus_name": "default",
+            "event_source": "scb-airbyte",
+            "event_data_type": "Call via Scanbuy Airbyte"
         }
 
         for key in required_keys | defaults.keys():
@@ -45,14 +45,14 @@ class DestinationEventBridge(Destination):
             aws_secret_access_key=config.get("credentials")["aws_secret_access_key"],
             region_name=config.get("region"))
     
-    def _put_events(self, client: boto3.client, detail_list: List[dict], bus_name: str) -> dict:
+    def _put_events(self, client: boto3.client, detail_list: List[dict], config: Mapping[str, Any]) -> dict:
         entries = []
         for detail in detail_list[:MAX_PUT_ENTRIES]:
             entries.append({
-                "Source": EVENT_SOURCE,
-                "DetailType": EVENT_DETAIL_TYPE,
+                "Source": config.get("event_source"),
+                "DetailType": config.get("event_data_type"),
                 "Detail": json.dumps(detail),
-                "EventBusName": bus_name
+                "EventBusName": config.get("bus_name")
             })
         return client.put_events(Entries=entries)
 
@@ -94,13 +94,13 @@ class DestinationEventBridge(Destination):
                     if message.record.data:
                         batch.append(message.record.data)
                         if len(batch) == MAX_PUT_ENTRIES:
-                            response = self._put_events(client, batch, config.get("bus_name"))
+                            response = self._put_events(client, batch, config)
                             batch = []
                 else:
                     # Let's ignore other message types for now
                     continue
             if batch:
-                response = self._put_events(client, batch, config.get("bus_name"))
+                response = self._put_events(client, batch, config)
         finally:
             client.close()
 
@@ -130,7 +130,7 @@ class DestinationEventBridge(Destination):
                 # Put event                
                 response = self._put_events(client, [{
                     "action": "check"
-                }], config.get("bus_name"))                
+                }], config)                
                 logger.debug(response)
 
                 if len(response.get("Entries", [])) != 1 or response["Entries"][0].get("ErrorCode"):

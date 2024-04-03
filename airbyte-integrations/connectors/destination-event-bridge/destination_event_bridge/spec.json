@@ -82,14 +82,26 @@
       "bus_name": {
         "title": "Event Bus Name",
         "type": "string",
-        "description": "The name of the Event Bridge.",
+        "description": "The name of the Event Bridge. Default: 'default'",
         "order": 3
+      },
+      "event_source": {
+        "title": "Event Source",
+        "type": "string",
+        "description": "The name of the Event Source. Default: 'scb-airbyte'",
+        "order": 4
+      },
+      "event_data_type": {
+        "title": "Event Data Type",
+        "type": "string",
+        "description": "The name of the Event Data Type. Default: 'Call via Scanbuy Airbyte'",
+        "order": 5
       },
       "endpoint_url": {
         "title": "Endpoint URL",
         "type": "string",
         "description": "The complete URL to use for the constructed client. By Default, botocore will automatically construct the appropriate URL to use when communicating with a service. You can specify a complete URL (including the “http/https” scheme) to override this behavior.",
-        "order": 4
+        "order": 6
       }
     }
   }
