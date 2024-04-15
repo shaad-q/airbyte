@@ -75,11 +75,9 @@ public class MongoSslUtils {
 
     // Import the SSL certiﬁcate in the truststore
 
-    LOGGER.info("Try to generate '{}'", CLIENT_CA_CERTIFICATE);
-    createCertificateFile(CLIENT_CA_CERTIFICATE, caCertificate);
-    LOGGER.info("'{}' Generated", CLIENT_CA_CERTIFICATE);
-    
     LOGGER.info("Try to generate '{}'", TRUST_STORE);
+    createCertificateFile(CLIENT_CA_CERTIFICATE, caCertificate);
+    
     runProcess(String.format("keytool -import -file %s -alias mongoClient -keystore %s -storepass %s -noprompt",
         CLIENT_CA_CERTIFICATE,
         TRUST_STORE,
@@ -101,6 +99,7 @@ public class MongoSslUtils {
   private static void createCertificateFile(final String fileName, final String fileValue) throws IOException {
     try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
       out.print(fileValue);
+      LOGGER.info("Certificate File '{}' created", fileName);
     }
   }
 
