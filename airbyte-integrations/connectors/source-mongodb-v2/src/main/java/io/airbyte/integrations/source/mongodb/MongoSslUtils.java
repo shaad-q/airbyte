@@ -33,6 +33,7 @@ public class MongoSslUtils {
     final String caCertificate,
     final String clientCertificate,
     final String clientKey,
+    final String clientKeyStorePassword,
     final String clientKeyPassword
   ) {
     try {
@@ -42,6 +43,7 @@ public class MongoSslUtils {
           caCertificate,
           clientCertificate,
           clientKey,
+          clientKeyStorePassword,
           getOrGeneratePassword(clientKeyPassword)
         );
       }
@@ -58,6 +60,7 @@ public class MongoSslUtils {
     final String caCertificate,
     final String clientCertificate,
     final String clientKey,
+    final String clientKeyStorePassword,
     final String clientKeyPassword
   )
   throws IOException, InterruptedException {
@@ -66,10 +69,11 @@ public class MongoSslUtils {
     createCertificateFile(CLIENT_CERTIFICATE, clientCertificate);
     createCertificateFile(CLIENT_KEY, clientKey);
 
-    runProcess(String.format("openssl pkcs12 -export -in %s -inkey %s -out %s -passout pass:%s",
+    runProcess(String.format("openssl pkcs12 -export -in %s -inkey %s -out %s -passout pass:%s -passin pass:%s",
         CLIENT_CERTIFICATE,
         CLIENT_KEY,
         CLIENT_KEY_STORE,
+        clientKeyStorePassword,
         clientKeyPassword));
     LOGGER.info("'{}' Generated", CLIENT_KEY_STORE);
 

@@ -37,6 +37,7 @@ public class MongoConnectionUtils {
         config.getCACertificate(),
         config.getClientCertificate(),
         config.getClientKey(),
+        config.getClientKeyStorePassword(),
         config.getClientKeyPassword()
       );
     }

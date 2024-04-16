@@ -197,12 +197,19 @@
                         "multiline": true,
                         "order": 3
                       },
-                      "client_key_password": {
+                      "client_key_password_in": {
                         "type": "string",
                         "title": "Client key password",
-                        "description": "Password for keystorage. If you do not add it - the password will be generated automatically.",
+                        "description": "Password required to read or used to create the client key password. 'openssl pkcs12 -export -passin pass:<client key password to read -inkey file>'",
                         "airbyte_secret": true,
                         "order": 4
+                      },
+                      "client_key_password_out": {
+                        "type": "string",
+                        "title": "Client key store password",
+                        "description": "Password for keystorage. If you do not add it - the password will be generated automatically. openssl pkcs12 -export -passout pass:<client key password to save file with password>",
+                        "airbyte_secret": true,
+                        "order": 5
                       }
                     }
                   }

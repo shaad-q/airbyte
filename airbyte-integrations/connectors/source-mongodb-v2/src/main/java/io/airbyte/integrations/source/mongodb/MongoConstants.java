@@ -44,7 +44,8 @@ public class MongoConstants {
   public static final String PARAM_CA_CERTIFICATE = "ca_certificate";
   public static final String PARAM_CLIENT_CERTIFICATE = "client_certificate";
   public static final String PARAM_CLIENT_KEY = "client_key";  
-  public static final String PARAM_CLIENT_KEY_PASSWORD = "client_key_password";
+  public static final String PARAM_CLIENT_KEY_PASSWORD_IN = "client_key_password_in";
+  public static final String PARAM_CLIENT_KEY_PASSWORD_OUT = "client_key_password_out";
   public static final String PARAM_SSL_KEY = "ssl_mode";
   public static final String PARAM_SSL_MODE_KEY = "mode";
   public static final String PARAM_SSL_MODE_CCV = "CCV";

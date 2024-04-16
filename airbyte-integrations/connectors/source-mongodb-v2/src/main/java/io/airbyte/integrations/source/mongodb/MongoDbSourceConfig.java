@@ -24,7 +24,8 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.PARAM_SSL_MO
 import static io.airbyte.integrations.source.mongodb.MongoConstants.PARAM_CA_CERTIFICATE;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.PARAM_CLIENT_CERTIFICATE;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.PARAM_CLIENT_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.PARAM_CLIENT_KEY_PASSWORD;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.PARAM_CLIENT_KEY_PASSWORD_IN;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.PARAM_CLIENT_KEY_PASSWORD_OUT;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.OptionalInt;
@@ -76,7 +77,11 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
   }
   
   public String getClientKeyPassword() {
-    return getSSLConfig().has(PARAM_CLIENT_KEY_PASSWORD) ? getSSLConfig().get(PARAM_CLIENT_KEY_PASSWORD).asText() : null;
+    return getSSLConfig().has(PARAM_CLIENT_KEY_PASSWORD_IN) ? getSSLConfig().get(PARAM_CLIENT_KEY_PASSWORD_IN).asText() : null;
+  }
+
+  public String getClientKeyStorePassword() {
+    return getSSLConfig().has(PARAM_CLIENT_KEY_PASSWORD_OUT) ? getSSLConfig().get(PARAM_CLIENT_KEY_PASSWORD_OUT).asText() : null;
   }
 
   public Integer getCheckpointInterval() {
