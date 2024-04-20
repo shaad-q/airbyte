@@ -29,6 +29,18 @@ public class MongoConnectionUtils {
    * @return The configured {@link MongoClient}.
    */
   public static MongoClient createMongoClient(final MongoDbSourceConfig config) {
+    final String sslMode = config.getSslMode();
+    final boolean isSSLEnabled = MongoSslUtils.isValidSslMode(sslMode);
+    if (isSSLEnabled) {
+      MongoSslUtils.setupCertificates(
+        sslMode,
+        config.getCACertificate(),
+        config.getClientCertificate(),
+        config.getClientKey(),
+        config.getClientKeyStorePassword(),
+        config.getClientKeyPassword()
+      );
+    }
     final ConnectionString mongoConnectionString = new ConnectionString(buildConnectionString(config));
 
     final MongoDriverInformation mongoDriverInformation = MongoDriverInformation.builder()
@@ -37,6 +49,7 @@ public class MongoConnectionUtils {
 
     final MongoClientSettings.Builder mongoClientSettingsBuilder = MongoClientSettings.builder()
         .applyConnectionString(mongoConnectionString)
+        .applyToSslSettings(builder -> builder.enabled(isSSLEnabled))
         .readPreference(ReadPreference.secondaryPreferred());
 
     if (config.hasAuthCredentials()) {
