@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "TaxonomyNodeIds": {
+      "type": "array",
+      "items": {
+        "type" : "string"
+      }
+    },
+    "Competitive": {
+      "type": "boolean"
+    },
+    "IsWorkInProgress": {
+      "type": "boolean"
+    },
+    "LastPublishedDate": {
+      "type": "string"
+    },
+    "RecordDate": {
+      "type": "string"
+    },
+    "SourcePartyIds": {
+      "type": "array",
+      "items" : {
+        "type": "string"
+      }
+    },
+    "CreatedByInbound": {
+      "type": "boolean"
+    },
+    "Archived": {
+      "type": "boolean"
+    },
+    "LifeCycle": {
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "DataOwner": {
+      "type": "string"
+    },
+    "Partition": {
+      "type": "string"
+    },
+    "Type": {
+      "type": "string"
+    },
+    "AuditInfo": {
+      "type": "object"
+    },
+    "Components": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}
