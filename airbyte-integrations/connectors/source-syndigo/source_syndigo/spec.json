@@ -1,0 +1,202 @@
+{
+  "documentationUrl": "https://docx.syndigo.com/",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Syndigo Spec",
+    "type": "object",
+    "required": [
+      "username",
+      "secret_key",
+      "search_product_request_body"
+    ],
+    "properties": {
+      "username": {
+        "title": "Username",
+        "type": "string",
+        "order": 1,
+        "group": "auth",
+        "description": "Your Syndigo auth user name. See <a href=\"https://docx.syndigo.com/developers/docs/api-authentication-1\">here</a>."
+      },
+      "secret_key": {
+        "title": "Secret Key",
+        "type": "string",
+        "order": 2,
+        "group": "auth",
+        "description": "Your URL encoded secret. See <a href=\"https://docx.syndigo.com/developers/docs/api-authentication-1\">here</a>.",
+        "airbyte_secret": true
+      },
+      "search_product_request_body": {
+        "title": "Request Body for Search Product API",
+        "type": "object",
+        "order": 3,
+        "group": "search_product_request_body",
+        "required": [
+          "DataOwner"
+        ],
+        "properties": {
+          "DataOwner": {
+            "title": "Company ID",
+            "type": "string",
+            "order": 1,
+            "always_show": true,
+            "description": "Company ID GUID"
+          },
+          "TargetPartyId": {
+            "title": "Target Party ID",
+            "type": "string",
+            "order": 2,
+            "always_show": true,
+            "description": "Sets the lens through which the product data is returned from search. Accepted Values: Recipient identifier: GUID or as aliased in customer vocab"
+          },
+          "OrderBy": {
+            "title": "Order By Attribute ID",
+            "type": "string",
+            "order": 3,
+            "always_show": true,
+            "description": "Sets return results order. Accepted Values: Attribute GUID (Ex. Product Name, Date Created, etc.)."
+          },
+          "AttributeFilterOperator": {
+            "title": "Attribute Filter Operator",
+            "type": "string",
+            "default": "And",
+            "order": 4,
+            "always_show": true,
+            "description": "Defaults to AND",
+            "enum": [
+              "And",
+              "Or"
+            ]
+          },
+          "DateFilters": {
+            "title": "Date Filters",
+            "type": "array",
+            "order": 5,
+            "always_show": true,
+            "description": "Searched date field and defined.",
+            "items": {
+              "title": "Date Filter Details",
+              "type": "object",
+              "required": [
+                "Name",
+                "Operator",
+                "Value",
+                "IncludeMissing"
+              ],
+              "properties": {
+                "Name": {
+                  "title": "Name",
+                  "type": "string",
+                  "order": 1,
+                  "always_show": true,
+                  "enum": [
+                    "CreatedDate",
+                    "RecordDate",
+                    "LastModifiedDate",
+                    "DiscontinueDate",
+                    "ObsolescenceDate",
+                    "LastPublishedDate"
+                  ],
+                  "description": "Part of DateFilter"
+                },
+                "Operator": {
+                  "title": "Operator",
+                  "type": "string",
+                  "order": 2,
+                  "always_show": true,
+                  "enum": [
+                    "LessThan",
+                    "LessThanOrEqualTo",
+                    "GreaterThan",
+                    "GreaterThanOrEqualTo"
+                  ],
+                  "description": "Part of DateFilter"
+                },
+                "Value": {
+                  "title": "Value",
+                  "type": "string",
+                  "order": 3,
+                  "always_show": true,
+                  "description": "Commonly acceptable string representation of a date/time"
+                },
+                "IncludeMissing": {
+                  "title": "Include Missing Values",
+                  "type": "boolean",
+                  "default": true,
+                  "order": 4,
+                  "always_show": true,
+                  "description": "Part of DateFilter"
+                }
+              }
+            }
+          },
+          "AttributeFilters": {
+            "title": "Attribute Filters",
+            "type": "array",
+            "order": 6,
+            "always_show": true,
+            "description": "Searches the value of attribute defined.",
+            "items": {
+              "title": "Attribute Filter Details",
+              "type": "object",
+              "required": [
+                "AttributeId",
+                "Values"
+              ],
+              "properties": {
+                "AttributeId": {
+                  "title": "Attribute ID",
+                  "type": "string",
+                  "order": 1,
+                  "description": "Searches the value of attribute defined."
+                },
+                "Values": {
+                  "title": "Attribute Values",
+                  "type": "array",
+                  "order": 2,
+                  "description": "List of string values for attribute values",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "OnHold": {
+            "title": "OnHold Flag",
+            "type": "boolean",
+            "default": false,
+            "order": 7,
+            "always_show": true,
+            "description": "Determines if the search returns OnHold products or not."
+          },
+          "Desc": {
+            "title": "Descending Order Flag",
+            "type": "boolean",
+            "default": true,
+            "order": 8,
+            "always_show": true,
+            "description": "Determines sort order (ascending or descending)."
+          },
+          "Archived": {
+            "title": "Archived Flag",
+            "type": "boolean",
+            "default": false,
+            "order": 9,
+            "always_show": true,
+            "description": "Determines if the search returns Archived products or not."
+          }
+        }
+      }
+    },
+    "groups": [
+      {
+        "id": "auth",
+        "title": "Authentication"
+      },
+      {
+        "id": "search_product_request_body",
+        "title": "[POST] Request Body - Search Product"
+      }
+    ]
+  }
+}

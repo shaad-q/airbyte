@@ -34,7 +34,7 @@ See `sample_files/sample_config.json` for a sample config file.
 poetry run source-syndigo spec
 poetry run source-syndigo check --config secrets/config.json
 poetry run source-syndigo discover --config secrets/config.json
-poetry run source-syndigo read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-syndigo read --config secrets/config.json --catalog sample_files/sample_config.json
 ```
 
 ### Running tests
