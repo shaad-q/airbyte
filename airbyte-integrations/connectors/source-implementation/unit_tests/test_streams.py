@@ -6,7 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_syndigo.source import SyndigoStream
+from source_implementation.source import SourceImplementation
 
 
 @pytest.fixture

@@ -5,7 +5,7 @@
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_syndigo.source import IncrementalSyndigoStream
+from source_implementation.source import IncrementalSyndigoStream
 
 
 @fixture

@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from .source import SourceSyndigo
+from .source import SourceImplementation
 
 def run():
-    source = SourceSyndigo()
+    source = SourceImplementation()
     launch(source, sys.argv[1:])

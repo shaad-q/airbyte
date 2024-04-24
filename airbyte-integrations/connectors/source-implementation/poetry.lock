@@ -706,6 +706,23 @@ dotenv = ["python-dotenv (>=0.10.4)"]
 email = ["email-validator (>=1.0.3)"]
 
 [[package]]
+name = "pydash"
+version = "8.0.0"
+description = "The kitchen sink of Python utility libraries for doing \"stuff\" in a functional way. Based on the Lo-Dash Javascript library."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pydash-8.0.0-py3-none-any.whl", hash = "sha256:be2c35df332473a5a939d485422c71a03b19b1a98d6559efb832eadb4a2cfc36"},
+    {file = "pydash-8.0.0.tar.gz", hash = "sha256:5a90d98b5f370bb9620f786221579df8f83d54f1f58de6a66f52b1bdba7175d1"},
+]
+
+[package.dependencies]
+typing-extensions = ">3.10,<4.6.0 || >4.6.0"
+
+[package.extras]
+dev = ["build", "coverage", "furo", "invoke", "mypy", "pytest", "pytest-cov", "pytest-mypy-testing", "ruff", "sphinx", "sphinx-autodoc-typehints", "tox", "twine", "wheel"]
+
+[[package]]
 name = "pyrate-limiter"
 version = "3.1.1"
 description = "Python Rate-Limiter using Leaky-Bucket Algorithm"
@@ -1143,4 +1160,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "b144c3c50e39decb384c93e87965a8e1e5a8d220d33278968ecee403b1b0b6de"
+content-hash = "ddd92db21ee11338bd05500164a7794a889a351088d0633375b0da6c940e6534"

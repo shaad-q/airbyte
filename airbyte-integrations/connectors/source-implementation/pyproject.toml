@@ -4,23 +4,24 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 version = "0.1.0"
-name = "source-syndigo"
-description = "Source implementation for syndigo."
+name = "source-implementation"
+description = "Source implementation for a generic HTTP source."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
-documentation = "https://docs.airbyte.com/integrations/sources/syndigo"
+documentation = "https://docs.airbyte.com/integrations/sources/scanbuy-generic-source"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-packages = [ { include = "source_syndigo" }, {include = "main.py" } ]
+packages = [ { include = "source_implementation" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 airbyte-cdk = "^0"
 requests = "^2.31.0"
+pydash = "^8.0.0"
 
 [tool.poetry.scripts]
-source-syndigo = "source_syndigo.run:run"
+source-implementation = "source_implementation.run:run"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "*"

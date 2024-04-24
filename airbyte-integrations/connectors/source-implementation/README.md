@@ -1,7 +1,7 @@
-# Syndigo Source
+# HTTP Generic Source
 
-This is the repository for the Syndigo source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/syndigo).
+This is the repository for a generic HTTP source connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/scanbuy-generic-source).
 
 ## Local development
 
@@ -22,8 +22,8 @@ poetry install --with dev
 
 ### Create credentials
 
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/syndigo)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_syndigo/spec.yaml` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/scanbuy-generic-source)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_implementation/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.
 
@@ -31,10 +31,10 @@ See `sample_files/sample_config.json` for a sample config file.
 ### Locally running the connector
 
 ```
-poetry run source-syndigo spec
-poetry run source-syndigo check --config secrets/config.json
-poetry run source-syndigo discover --config secrets/config.json
-poetry run source-syndigo read --config secrets/config.json --catalog sample_files/sample_config.json
+poetry run source-implementation spec
+poetry run source-implementation check --config secrets/config.json
+poetry run source-implementation discover --config secrets/config.json
+poetry run source-implementation read --config secrets/config.json --catalog sample_files/sample_config.json
 ```
 
 ### Running tests
@@ -50,20 +50,20 @@ poetry run pytest tests
 1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
 2. Run the following command to build the docker image:
 ```bash
-airbyte-ci connectors --name=source-syndigo build
+airbyte-ci connectors --name=source-implementation build
 ```
 
-An image will be available on your host with the tag `airbyte/source-syndigo:dev`.
+An image will be available on your host with the tag `airbyte/source-implementation:dev`.
 
 
 ### Running as a docker container
 
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-syndigo:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-syndigo:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-syndigo:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-syndigo:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-implementation:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-implementation:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-implementation:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-implementation:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ### Running our CI test suite
@@ -71,7 +71,7 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
 
 ```bash
-airbyte-ci connectors --name=source-syndigo test
+airbyte-ci connectors --name=source-implementation test
 ```
 
 ### Customizing acceptance Tests
@@ -93,12 +93,12 @@ Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 ## Publishing a new version of the connector
 
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-syndigo test`
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-implementation test`
 2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
     - bump the `dockerImageTag` value in in `metadata.yaml`
     - bump the `version` value in `pyproject.toml`
 3. Make sure the `metadata.yaml` content is up to date.
-4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/syndigo.md`).
+4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/source.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
