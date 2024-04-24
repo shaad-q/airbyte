@@ -210,6 +210,13 @@
                   "type": "string",
                   "order": 6,
                   "description": "Enter the key that you want to select from response. We use pydash to retrieve the value. Read more <a href=\"https://pydash.readthedocs.io/en/latest/api.html#pydash.objects.get\">here</a>."
+                },
+                "response_schema": {
+                  "title": "Response JSONSchema",
+                  "type": "string",
+                  "description": "Add Response JSONSchema. Default response schema only contains primary key for stream",
+                  "multiline": true,
+                  "order": 6
                 }
               }
             },

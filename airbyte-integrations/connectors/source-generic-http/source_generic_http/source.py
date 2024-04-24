@@ -62,13 +62,14 @@ class GenericStream(HttpStream, ABC):
         return Utils.get_from_object(self.stream_request, 'emit_key', 'id')
 
     def get_json_schema(self):
+        if Utils.get_from_object(self.stream_request, 'api.response_schema'):
+            return json.loads(Utils.get_from_object(self.stream_request, 'api.response_schema'))
         schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {}
         }
         schema["properties"].update({self.primary_key: {"type": "string"}})
-        # TODO: add dynamic schema
         return schema
 
     @property
