@@ -101,7 +101,6 @@ class GenericStream(HttpStream, ABC):
         params = Utils.build_dict(Utils.get_from_object(self.stream_request, 'api.query_params', {}))
         if next_page_token:
             params.update(next_page_token)
-        logger.info(f"Stream: {self.name} request_params: {params}")
         return params
 
     def request_body_json(
@@ -148,7 +147,6 @@ class GenericStream(HttpStream, ABC):
             next_token = Utils.get_from_object(response.json(), value)
             if next_token is not None:
                 params[key] = next_token
-        logger.info(f"Stream: {self.name} next_page_token: {params}")
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
