@@ -81,7 +81,7 @@
           {
             "title": "Self-Managed Replica Set",
             "description": "MongoDB self-hosted cluster configured as a replica set",
-            "required": ["cluster_type", "connection_string", "database"],
+            "required": ["cluster_type", "connection_string", "database", "username", "password"],
             "additionalProperties": true,
             "properties": {
               "cluster_type": {
@@ -152,6 +152,37 @@
                         "enum": ["disable"],
                         "default": "disable",
                         "order": 0
+                      }
+                    }
+                  },
+                  {
+                    "title": "AWS Certificate Validation",
+                    "additionalProperties": false,
+                    "description": "Use this when trying to connect to AWS DocumentDB",
+                    "required": ["mode"],
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "const": "AWS",
+                        "enum": ["AWS"],
+                        "default": "AWS",
+                        "order": 0
+                      },
+                      "ca_certificate": {
+                        "type": "string",
+                        "title": "CA Certificate",
+                        "description": "CA certificate",
+                        "airbyte_secret": true,
+                        "always_show": true,
+                        "multiline": true,
+                        "order": 1
+                      },
+                      "trust_store_password": {
+                        "type": "string",
+                        "title": "Trust store password",
+                        "description": "Password for JAVA Trust store. If you do not add it - the password will be generated automatically.",
+                        "airbyte_secret": true,
+                        "order": 2
                       }
                     }
                   },
